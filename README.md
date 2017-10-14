@@ -1,2 +1,2 @@
 # duplicacy-base-docker
-Docker base image fore duplicacy.
+Docker base image for duplicacy.
