@@ -1,17 +1,23 @@
 # This Dockerfile is a base image with duplicacy installed
-From alpine:latest
+From golang:latest
 LABEL maintainer="Michael Hsu"
 
 # Vars
-ENV DUPLICACY_BASE_URL="https://github.com/gilbertchen/duplicacy/releases/download/v2.0.9/duplicacy_linux_x64_"
-ENV DUPLICACY_BASE_NAME="duplicacy_linux_x64"
-ENV DUPLICACY_VERSION="2.0.9"
+ENV DUPLICACY_SOURCE="https://github.com/gilbertchen/duplicacy.git"
+ENV DUPLICACY_BASE_NAME="duplicacy"
+ENV DUPLICACY_SOURCE_HASH="c829b80"
 
-RUN /sbin/apk update && \
-    /sbin/apk add curl
+# Clone duplicacy source
+WORKDIR /go/src
+RUN git clone $DUPLICACY_SOURCE && \
+    cd ${DUPLICACY_BASE_NAME} && \
+    git reset --hard ${DUPLICACY_SOURCE_HASH}
 
-RUN curl -L -o /${DUPLICACY_BASE_NAME}_${DUPLICACY_VERSION} https://github.com/gilbertchen/duplicacy/releases/download/v${DUPLICACY_VERSION}/${DUPLICACY_BASE_NAME}_${DUPLICACY_VERSION} && \
-    chmod 755 /${DUPLICACY_BASE_NAME}_${DUPLICACY_VERSION}
+# Build duplicacy
+WORKDIR /go/src
+RUN go get ${DUPLICACY_BASE_NAME}/...
+RUN go build ${DUPLICACY_BASE_NAME}/...
+RUN cp /go/bin/${DUPLICACY_BASE_NAME} /${DUPLICACY_BASE_NAME}
 
 RUN mkdir /backup
 RUN mkdir /restore
